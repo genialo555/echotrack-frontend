@@ -1,0 +1,19 @@
+@import 'tailwindcss/base';
+@import 'tailwindcss/components';
+@import 'tailwindcss/utilities';
+
+:root {
+  --primary-color: #1E90FF;
+  --secondary-color-1: #32CD32;
+  --secondary-color-2: #FFA500;
+  --neutral-light: #F5F5F5;
+  --neutral-dark: #333333;
+}
+
+body {
+  font-family: 'Open Sans', sans-serif;
+  background-color: var(--neutral-light);
+  color: var(--neutral-dark);
+  margin: 0;
+  padding: 0;
+}

@@ -1,0 +1,57 @@
+
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+}
+/* Ajoutez ce style dans votre fichier CSS principal */
+.bg-white {
+  background: #fff;
+}
+
+.shadow-lg {
+  box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+}
+
+.rounded {
+  border-radius: 0.5rem;
+}
+.conteneur-fonctionnalites .elementInterne {
+  margin-bottom: 0 !important;
+  padding-bottom: 0 !important;
+}
+/* styles.css */
+
+.scrollbar-custom::-webkit-scrollbar {
+  width: 8px;
+}
+
+.scrollbar-custom::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+.scrollbar-custom::-webkit-scrollbar-thumb {
+  background-color: #4caf50; /* Couleur de la barre de défilement */
+  border-radius: 4px;
+  border: 2px solid #f1f1f1;
+}
+
+.scrollbar-custom::-webkit-scrollbar-thumb:hover {
+  background-color: #45a049; /* Couleur lors du survol */
+}
+
+/* Pour Firefox */
+.scrollbar-custom {
+  scrollbar-width: thin;
+  scrollbar-color: #4caf50 #f1f1f1;
+}
