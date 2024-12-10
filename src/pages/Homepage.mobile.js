@@ -1,38 +1,20 @@
-import React, { useState } from 'react';
+// Core React and library imports
+import React, { useState, useEffect, Suspense, lazy } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { ToastContainer } from 'react-toastify';
+import { motion } from 'framer-motion';
+
+// Image imports
 import backgroundImage from './imagebank/AdobeStock_876092380.jpeg';
 import powerBiImage from '../pages/imagebank/powerbi.jpeg';
 import quickBooksImage from '../pages/imagebank/qb.jpeg';
 import salesforceImage from '../pages/imagebank/salesforce.jpeg';
 import slackImage from '../pages/imagebank/slack.jpeg';
-import FleetPerformanceChart from '../components/FleetPerformanceChart';
+
+// Component imports
 import { Newsletter, ContactForm } from '../components';
-import { useNavigate } from 'react-router-dom';
-import { ToastContainer } from 'react-toastify';
-import { motion } from 'framer-motion';
 import TermsModal from '../components/TermsModal';
 import Chatbot from '../components/Chatbot';
-
-import { 
-  Car,
-  Trophy,          // Remplace Award
-  ChartBar,        // Remplace BarChart
-  Leaf,
-  List,            // Remplace MenuIcon
-  X,
-  FileText,
-  Bell,
-  Users,
-  Envelope,        // Remplace Mail
-  Chat,            // Remplace MessageSquare
-  Check,
-  PaperPlane,      // Remplace Send
-  TwitterLogo,     // Remplace BrandTwitter
-  LinkedinLogo,    // Remplace BrandLinkedin
-  FacebookLogo,    // Remplace BrandFacebook
-  InstagramLogo    // Remplace BrandInstagram
-} from 'phosphor-react';
-
-
 import {
   Layout,
   Section,
@@ -40,9 +22,34 @@ import {
   MetricCard,
   AuthButtons
 } from '../components';
-import DashboardUtilisateur from '../components/DashboardUtilisateur';
-import DashboardEntreprise from '../components/DashboardEntreprise';
 
+// Icon imports
+import { 
+  Car,
+  Trophy,
+  ChartBar,
+  Leaf,
+  List,
+  X,
+  FileText,
+  Bell,
+  Users,
+  Envelope,
+  Chat,
+  Check,
+  PaperPlane,
+  TwitterLogo,
+  LinkedinLogo,
+  FacebookLogo,
+  InstagramLogo
+} from 'phosphor-react';
+
+// Lazy loaded components
+const FleetPerformanceChart = lazy(() => import('../components/FleetPerformanceChart'));
+const DashboardUtilisateur = lazy(() => import('../components/DashboardUtilisateur'));
+const DashboardEntreprise = lazy(() => import('../components/DashboardEntreprise'));
+
+// Animation variants
 const containerVariant = {
   hidden: { opacity: 0 },
   visible: {
@@ -52,29 +59,6 @@ const containerVariant = {
     }
   }
 };
-
-const INTEGRATION_PARTNERS = [
-  {
-    id: 1,
-    name: "Power BI",
-    imagePath: powerBiImage
-  },
-  {
-    id: 2,
-    name: "QuickBooks",
-    imagePath: quickBooksImage
-  },
-  {
-    id: 3,
-    name: "Salesforce",
-    imagePath: salesforceImage
-  },
-  {
-    id: 4,
-    name: "Slack",
-    imagePath: slackImage
-  }
-];
 
 const itemVariant = {
   hidden: { opacity: 0, y: 20 },
@@ -101,7 +85,7 @@ const slideUp = {
   transition: { duration: 0.6 }
 };
 
-// Les différentes sections avec leurs icônes
+// Définition des éléments de navigation
 const NAV_ITEMS = [
   { id: 'accueil', label: 'Accueil', icon: Leaf },
   { id: 'fonctionnalites', label: 'Fonctionnalités', icon: FileText },
@@ -112,44 +96,103 @@ const NAV_ITEMS = [
 
 // Couleurs pour les blocs verticaux mobile selon la section
 const colorMapping = {
-  fonctionnalites: 'bg-gradient-to-r from-primary to-tealBlue',    // #249b5b à #249b97
-  statistiques: 'bg-gradient-to-r from-tealBlue to-deepBlue',      // #249b97 à #24649b
-  integrations: 'bg-gradient-to-r from-deepBlue to-intenseBlue',  // #24649b à #24289b
-  contact: 'bg-gradient-to-r from-intenseBlue to-vibrantViolet',  // #24289b à #5b249b
+  fonctionnalites: 'bg-gradient-to-r from-primary to-tealBlue',
+  statistiques: 'bg-gradient-to-r from-tealBlue to-deepBlue',
+  integrations: 'bg-gradient-to-r from-deepBlue to-intenseBlue',
+  contact: 'bg-gradient-to-r from-intenseBlue to-vibrantViolet',
 };
 
+// Définition des fonctionnalités
 const FEATURES = [
   {
     title: "Rapports Automatisés",
     description: "Générez des rapports détaillés sur vos performances environnementales",
     icon: FileText,
-    bgColor: "bg-primary/20" // Utilisation de primary avec opacité
+    bgColor: "bg-primary/20"
   },
   {
     title: "Alertes Intelligentes",
     description: "Recevez des notifications personnalisées sur les événements importants",
     icon: Bell,
-    bgColor: "bg-tealBlue/20" // Utilisation de tealBlue avec opacité
+    bgColor: "bg-tealBlue/20"
   },
   {
     title: "Gestion d'Équipe",
     description: "Gérez les accès et les rôles de votre équipe efficacement",
     icon: Users,
-    bgColor: "bg-primary/20" // Utilisation de primary avec opacité
+    bgColor: "bg-primary/20"
   }
 ];
 
+// Définition des partenaires d'intégration
+const INTEGRATION_PARTNERS = [
+  {
+    id: 1,
+    name: "Power BI",
+    imagePath: powerBiImage
+  },
+  {
+    id: 2,
+    name: "QuickBooks",
+    imagePath: quickBooksImage
+  },
+  {
+    id: 3,
+    name: "Salesforce",
+    imagePath: salesforceImage
+  },
+  {
+    id: 4,
+    name: "Slack",
+    imagePath: slackImage
+  }
+];
+
+// Composant Bottom Navigation pour mobile
+const BottomNav = ({ currentSection, scrollToSection, handleButtonClick }) => {
+  return (
+    <nav className="fixed bottom-0 left-0 w-full bg-white shadow-md z-50 md:hidden m-0 p-0">
+      <div className="flex justify-around">
+        {NAV_ITEMS.map(({ id, label, icon: Icon }) => (
+          <button
+            key={id}
+            onClick={() => handleButtonClick(() => scrollToSection(id))}
+            className={`flex flex-col items-center justify-center py-2 w-full transition-transform active:scale-95 ${
+              currentSection === id ? 'text-primary' : 'text-gray-600'
+            }`}
+            aria-label={label}
+            style={{
+              background: currentSection === id ? '#FFA500' : 'white',
+              color: currentSection === id ? 'white' : '#333',
+              textShadow: '0px 1px 2px rgba(0,0,0,0.5)', // Améliore le contraste
+            }}
+          >
+            <Icon size={24} className={`${currentSection === id ? 'text-white' : 'text-black'} mx-auto`} />
+            <span className="text-sm font-medium tracking-wide">{label}</span>
+          </button>
+        ))}
+      </div>
+    </nav>
+  );
+};
+
+// Composant principal HomePage
 const HomePage = () => {
-  
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isDashboardUser, setIsDashboardUser] = useState(true);
+  const [currentSection, setCurrentSection] = useState('accueil');
   const navigate = useNavigate();
+  const [isTermsModalOpen, setIsTermsModalOpen] = useState(false);
   
+  // État pour gérer la visibilité du modal
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  // Fonction de navigation
   const handleConnexion = () => navigate('/connexion');
   const handleInscription = () => navigate('/inscription');
   const handleContact = () => navigate('/contact');
-  const [isTermsModalOpen, setIsTermsModalOpen] = useState(false);
 
+  // Fonction pour scroller vers une section spécifique
   const scrollToSection = (id) => {
     const element = document.getElementById(id);
     if (element) {
@@ -158,8 +201,44 @@ const HomePage = () => {
     }
   };
 
-  const toggleDashboard = () => {
-    setIsDashboardUser(!isDashboardUser);
+  // Fonction pour basculer entre les dashboards
+  const toggleDashboard = (view) => {
+    if (view === 'user') {
+      setIsDashboardUser(true);
+    } else {
+      setIsDashboardUser(false);
+    }
+  };
+
+  // Gestion du scroll pour déterminer la section actuelle
+  const handleScroll = () => {
+    const sections = NAV_ITEMS.map(item => document.getElementById(item.id));
+    const scrollPosition = window.scrollY + window.innerHeight / 2;
+    for (let section of sections) {
+      if (section && section.offsetTop <= scrollPosition && (section.offsetTop + section.offsetHeight) > scrollPosition) {
+        setCurrentSection(section.id);
+        break;
+      }
+    }
+  };
+
+  // Ajout de l'écouteur de scroll
+  useEffect(() => {
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  // Gestion des retours haptiques
+  const handleButtonClick = (callback) => {
+    if (navigator.vibrate) {
+      navigator.vibrate(100); // Vibre pendant 100ms
+    }
+    callback();
+  };
+
+  // Fonction de gestionnaire combinée pour la navigation desktop
+  const handleNavClick = (id) => {
+    handleButtonClick(() => scrollToSection(id));
   };
 
   return (
@@ -167,12 +246,13 @@ const HomePage = () => {
       <ToastContainer />
       <StatsDashboard fleetCount={247} co2Reduction={2450} />
 
-      <header className="fixed w-full top-0 left-0 z-50 bg-primary backdrop-blur-sm bg-opacity-80 border-b border-gray-200">
-        <div className="container mx-auto px-4 relative">
-          <div className="flex items-center justify-between py-4">
+      {/* Header */}
+      <header className="fixed w-full top-0 left-0 z-50 bg-primary backdrop-blur-sm bg-opacity-80 border-b border-gray-200 h-24">
+        <div className="container mx-auto px-0 relative">
+          <div className="flex items-center justify-between py-1 md:py-3">
             <div className="flex items-center gap-2">
-              <Leaf className="w-8 h-8 text-white" />
-              <span className="text-2xl font-bold text-white">EchoTrack</span>
+              <Leaf className="w-6 h-6 md:w-8 md:h-8 text-white" />
+              <span className="text-xl md:text-2xl font-bold text-white">EchoTrack</span>
             </div>
 
             {/* Navigation Desktop (visible sur écrans moyens et supérieurs) */}
@@ -180,8 +260,9 @@ const HomePage = () => {
               {NAV_ITEMS.map(({ id, label }) => (
                 <button 
                   key={id}
-                  onClick={() => scrollToSection(id)}
-                  className="text-white hover:text-secondary font-medium transition-colors text-lg px-4 py-2"
+                  onClick={() => handleNavClick(id)}
+                  className="text-white hover:text-orange-500 font-medium transition-colors text-lg px-4 py-2 bg-orange-400 hover:bg-orange-500 rounded shadow-md"
+                  aria-label={label}
                 >
                   {label}
                 </button>
@@ -189,8 +270,8 @@ const HomePage = () => {
             </nav>
 
             <AuthButtons 
-              onLogin={handleConnexion}
-              onStarted={handleInscription}
+              onLogin={() => handleButtonClick(handleConnexion)}
+              onStarted={() => handleButtonClick(handleInscription)}
             />
 
             {/* Bouton Menu Mobile (visible uniquement sur petits écrans) */}
@@ -200,54 +281,118 @@ const HomePage = () => {
               aria-label="Menu mobile"
             >
               {isMenuOpen ? (
-                <X size={24} weight="bold" className="text-secondary" />
+                <X size={20} weight="bold" className="text-orange-500" />
               ) : (
-                <List size={24} weight="bold" className="text-secondary" />
+                <List size={20} weight="bold" className="text-orange-500" />
               )}
+            </button>
+
+            {/* Bouton pour ouvrir le modal du tableau de bord */}
+            <button 
+              className="hidden md:block ml-4 px-4 py-2 bg-orange-500 text-white font-medium rounded-lg shadow-lg hover:bg-orange-600 transition-colors active:scale-95"
+              onClick={() => setIsModalOpen(true)}
+            >
+              Tableau de Bord
             </button>
           </div>
 
           {/* Menu Mobile (visible uniquement sur petits écrans) */}
           {isMenuOpen && (
             <motion.div
-              initial={{ opacity: 0, y: -10}}
+              initial={{ opacity: 0, y: -20 }}
               animate={{ opacity: 1, y: 0 }}
-              className="md:hidden absolute top-full left-0 w-full bg-primary border-b border-gray-200 py-8 z-50"
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.3 }}
+              className="md:hidden absolute top-full left-0 w-full bg-primary border-b border-gray-200 py-4 z-50 m-0 p-0"
             >
               <nav className="flex flex-col space-y-6 px-6 text-center">
                 {NAV_ITEMS.map(({ id, label }) => (
                   <button 
                     key={id}
-                    onClick={() => scrollToSection(id)}
-                    className="text-white hover:text-secondary font-medium transition-colors text-xl py-3"
+                    onClick={() => handleButtonClick(() => scrollToSection(id))}
+                    className="text-white hover:text-orange-500 font-medium transition-colors text-lg py-2"
                   >
                     {label}
                   </button>
                 ))}
-                <button 
-                  onClick={handleConnexion}
-                  className="text-secondary font-medium hover:text-secondary-dark transition-colors text-xl py-3"
-                >
-                  Connexion
-                </button>
-                <button 
-                  onClick={handleInscription}
-                  className="w-full py-3 bg-secondary text-white font-medium rounded-lg hover:bg-secondary-dark transition-colors text-xl"
-                >
-                  Commencer
-                </button>
+                <div className="flex flex-col space-y-2 mt-4">
+                  <button 
+                    onClick={() => handleButtonClick(handleConnexion)}
+                    className="text-orange-500 font-medium hover:text-orange-600 transition-colors text-lg py-2"
+                  >
+                    Connexion
+                  </button>
+                  <button 
+                    onClick={() => handleButtonClick(handleInscription)}
+                    className="w-full py-2 bg-orange-500 text-white font-medium rounded-lg hover:bg-orange-600 transition-colors text-lg"
+                  >
+                    Commencer
+                  </button>
+                </div>
               </nav>
             </motion.div>
           )}
         </div>
       </header>
 
-      <main className="pt-24">
+      {/* Navigation rapide en mobile avec couleurs dynamiques */}
+      <Section className="md:hidden pt-24 py-6 px-4 bg-primary border-b">
+        <div className="flex flex-col space-y-4">
+          {NAV_ITEMS.filter(item => item.id !== 'accueil').map((item) => {
+            const Icon = item.icon || Leaf;
+            const gradient = colorMapping[item.id] || 'bg-gray-300';
+
+            return (
+              <button
+                key={item.id}
+                onClick={() => handleButtonClick(() => scrollToSection(item.id))}
+                className={`
+                  relative
+                  rounded-lg 
+                  h-24 sm:h-32 
+                  w-full
+                  px-4 
+                  my-3         
+                  flex flex-col items-center justify-center
+                  hover:shadow-lg  
+                  transition-all duration-300
+                  focus:outline-none 
+                  active:scale-95
+                  text-center
+                  overflow-hidden
+                `}
+              >
+                {/* Couleur de fond dynamique */}
+                <div className={`${gradient} absolute inset-0`}></div>
+                
+                {/* Superposition grise plus légère */}
+                <div className="absolute inset-0 bg-gray-500 bg-opacity-20"></div>
+                
+                {/* Contenu du bouton avec plus d'espace */}
+                <div className="relative z-10 flex flex-col items-center justify-center space-y-4">
+                  {/* Icône avec fond noir et icône blanche */}
+                  <div className="w-14 h-14 bg-black rounded-full flex items-center justify-center shadow-lg">
+                    <Icon size={28} className="text-white mx-auto" />
+                  </div>
+                  
+                  {/* Texte plus grand et plus espacé */}
+                  <span className="text-xl sm:text-2xl font-bold text-white tracking-wide">
+                    {item.label}
+                  </span>
+                </div>
+              </button>
+            );
+          })}
+        </div>
+      </Section>
+
+      <main className="pt-24 md:pt-24">
         {/* Accueil Section */}
         <Section 
           id="accueil" 
-          className="bg-white border-b min-h-[80vh] flex items-center relative overflow-hidden"
+          className="min-h-screen flex items-center relative overflow-hidden"
         >
+          {/* Image de fond */}
           <div 
             className="absolute inset-0 z-0"
             style={{
@@ -259,22 +404,24 @@ const HomePage = () => {
             }}
           />
 
+          {/* Overlay sombre */}
           <div className="absolute inset-0 bg-black bg-opacity-40 z-10" />
 
+          {/* Contenu principal */}
           <motion.div 
-            className="max-w-3xl mx-auto text-center relative z-20"
+            className="max-w-3xl mx-auto text-center relative z-20 px-4 sm:px-6 lg:px-8"
             variants={containerVariant}
             initial="hidden"
             animate="visible"
           >
             <motion.h1 
-              className="text-5xl md:text-6xl font-bold text-white mb-6"
+              className="text-4xl sm:text-5xl md:text-6xl font-bold text-white mb-6"
               variants={itemVariant}
             >
               Gestion Intelligente de Flotte & Impact Environnemental
             </motion.h1>
             <motion.p 
-              className="text-xl md:text-2xl text-gray-100 mb-8"
+              className="text-lg sm:text-xl md:text-2xl text-gray-100 mb-8"
               variants={itemVariant}
             >
               Solution complète pour optimiser votre flotte et réduire votre empreinte carbone
@@ -284,14 +431,14 @@ const HomePage = () => {
               variants={itemVariant}
             >
               <button 
-                onClick={handleInscription}
-                className="px-10 py-4 bg-secondary text-white font-medium rounded-lg hover:bg-secondary-dark transition-colors transform hover:scale-105 text-lg"
+                onClick={() => handleButtonClick(handleInscription)}
+                className="px-6 sm:px-10 py-3 sm:py-4 bg-orange-500 text-white font-medium rounded-lg hover:bg-orange-600 transition-colors transform hover:scale-105 text-lg"
               >
                 Démarrer Gratuitement
               </button>
               <button 
-                onClick={handleContact}
-                className="px-10 py-4 border-2 border-white text-white font-medium rounded-lg hover:bg-white hover:text-secondary transition-colors transform hover:scale-105 text-lg"
+                onClick={() => handleButtonClick(handleContact)}
+                className="px-6 sm:px-10 py-3 sm:py-4 border-2 border-white text-white font-medium rounded-lg hover:bg-white hover:text-orange-500 transition-colors transform hover:scale-105 text-lg"
               >
                 Demander une Démo
               </button>
@@ -299,57 +446,10 @@ const HomePage = () => {
           </motion.div>
         </Section>
 
-        {/* Navigation rapide en mobile avec couleurs dynamiques */}
-        <Section className="md:hidden py-5 px-4 bg-primary border-b">
-          <div className="flex flex-col space-y-4">
-            {NAV_ITEMS.filter(item => item.id !== 'accueil').map((item, index, array) => {
-              const Icon = item.icon || Leaf;
-              const gradient = colorMapping[item.id] || 'bg-gray-300';
-
-              return (
-                <button
-                  key={item.id}
-                  onClick={() => scrollToSection(item.id)}
-                  className={`
-                    relative
-                    rounded-lg 
-                    h-[300px] w-full
-                    px-6 
-                    flex flex-col items-center justify-center
-                    hover:shadow-md 
-                    transition-shadow 
-                    focus:outline-none 
-                    active:scale-95
-                    text-center
-                    overflow-hidden
-                  `}
-                >
-                  {/* Couleur de fond dynamique */}
-                  <div className={`${gradient} absolute inset-0`}></div>
-                  
-                  {/* Superposition grise */}
-                  <div className="absolute inset-0 bg-gray-500 bg-opacity-40"></div>
-                  
-                  {/* Contenu du bouton */}
-                  <div className="relative z-10 flex flex-col items-center justify-center">
-                    {/* Icône avec fond noir et icône blanche, plus grande */}
-                    <div className="w-16 h-12 bg-black rounded-full flex items-center justify-center mb-6 shadow-md">
-                      <Icon size={32} className="text-white" />
-                    </div>
-                    
-                    {/* Texte plus grand, en blanc, centré */}
-                    <span className="text-3xl font-bold text-white">{item.label}</span>
-                  </div>
-                </button>
-              );
-            })}
-          </div>
-        </Section>
-
-        {/* Section Fonctionnalités avec dégradé et overlay pour lisibilité */}
+        {/* Section Fonctionnalités */}
         <Section 
           id="fonctionnalites" 
-          className={`${colorMapping['fonctionnalites']} relative py-24 text-white`}
+          className={`${colorMapping['fonctionnalites']} relative py-8 md:py-16 text-white`}
         >
           <div className="absolute inset-0 bg-primary/30 backdrop-blur-sm z-10"></div>
           <motion.div
@@ -359,48 +459,48 @@ const HomePage = () => {
             whileInView="visible"
             viewport={{ once: true }}
           >
-            <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 items-start">
+            <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 md:gap-6">
               <motion.div 
                 variants={fadeIn} 
                 className="
                   bg-white bg-opacity-80 
                   rounded-2xl 
-                  p-6 lg:p-8 xl:p-10 
-                  shadow-md
+                  p-2 sm:p-4 lg:p-6 
+                  shadow-sm
                   flex 
                   flex-col
-                  space-y-8
+                  space-y-2
                   text-gray-900
                 "
               >
-                <h3 className="text-2xl font-bold">
+                <h3 className="text-lg sm:text-xl font-bold">
                   Tableau de Bord Intelligent
                 </h3>
                 
-                <p className="text-lg leading-relaxed">
+                <p className="text-xs sm:text-sm leading-relaxed">
                   Visualisez en temps réel les performances de votre flotte avec des métriques essentielles et des analyses prédictives avancées.
                 </p>
                 
-                <ul className="space-y-4">
+                <ul className="space-y-1">
                   {FEATURES.map((feature, index) => (
                     <motion.li
                       key={index}
                       className={`
-                        flex items-center gap-4 
-                        ${feature.bgColor} p-4 
-                        rounded-xl 
-                        hover:shadow-lg 
+                        flex items-center gap-2 
+                        ${feature.bgColor} p-2 
+                        rounded-lg 
+                        hover:shadow-md 
                         transition-shadow 
                         cursor-pointer
                       `}
                       variants={slideUp}
                     >
-                      <div className="w-12 h-12 rounded-full bg-white flex items-center justify-center flex-shrink-0 shadow-md">
-                        <feature.icon size={24} className="text-gray-900" />
+                      <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center flex-shrink-0 shadow-md">
+                        <feature.icon size={16} className="text-gray-900 mx-auto" />
                       </div>
                       <div className="flex flex-col text-gray-900">
-                        <p className="font-semibold text-lg">{feature.title}</p>
-                        <p className="text-sm mt-1">{feature.description}</p>
+                        <p className="font-semibold text-sm">{feature.title}</p>
+                        <p className="text-xs mt-0.5">{feature.description}</p>
                       </div>
                     </motion.li>
                   ))}
@@ -411,53 +511,71 @@ const HomePage = () => {
                 variants={fadeIn} 
                 className="
                   lg:col-span-3
-                  rounded-3xl 
-                  shadow-lg 
-                  p-4
-                  flex flex-col items-center
+                  rounded-2xl 
+                  shadow-sm 
+                  p-2 sm:p-4 lg:p-6
+                  flex 
+                  flex-col 
+                  items-center
                   bg-white bg-opacity-80
                 "
               >
-                <div className="flex justify-between items-center mb-4 w-full text-gray-900">
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
-                      <Leaf size={24} className="text-white" />
+                <div className="flex justify-between items-center mb-3 w-full text-gray-900">
+                  <div className="flex items-center gap-2">
+                    <div className="w-5 h-5 sm:w-6 sm:h-6 bg-orange-500 rounded-full flex items-center justify-center">
+                      <Leaf size={16} className="text-white" />
                     </div>
-                    <h4 className="font-semibold text-lg">Nos Fonctionnalités.</h4>
+                    <h4 className="font-semibold text-sm sm:text-base">Nos Fonctionnalités</h4>
                   </div>
-                  <button
-                    onClick={toggleDashboard}
-                    className="px-4 py-2 bg-secondary text-white font-medium rounded-lg hover:bg-secondary-dark transition-all duration-300 text-lg"
-                  >
-                    {isDashboardUser ? 'Vue Utilisateur' : 'Vue Entreprise'}
-                  </button>
+                  <div className="flex space-x-2">
+                    {/* Bouton Vue Utilisateur */}
+                    <button
+                      onClick={() => handleButtonClick(() => toggleDashboard('user'))}
+                      className={`px-2 sm:px-3 py-0.5 sm:py-1 bg-orange-500 text-white font-medium rounded-lg hover:bg-orange-600 transition-all duration-300 text-xs sm:text-sm active:scale-95 ${
+                        isDashboardUser ? 'opacity-100' : 'opacity-50'
+                      }`}
+                    >
+                      Vue Utilisateur
+                    </button>
+                    {/* Bouton Vue Entreprise */}
+                    <button
+                      onClick={() => handleButtonClick(() => toggleDashboard('enterprise'))}
+                      className={`px-2 sm:px-3 py-0.5 sm:py-1 bg-orange-500 text-white font-medium rounded-lg hover:bg-orange-600 transition-all duration-300 text-xs sm:text-sm active:scale-95 ${
+                        !isDashboardUser ? 'opacity-100' : 'opacity-50'
+                      }`}
+                    >
+                      Vue Entreprise
+                    </button>
+                  </div>
                 </div>
                 
                 <div 
                   className="
                     bg-gray-100 
-                    rounded-2xl 
+                    rounded-lg 
                     shadow-inner 
                     w-full 
                     h-auto 
-                    max-h-[80vh] 
+                    max-h-[50vh] sm:max-h-[70vh] 
                     overflow-auto
-                    p-4
+                    p-2 sm:p-3
                   "
                 >
                   <div 
                     className="
                       bg-white 
-                      rounded-xl 
-                      shadow-md 
-                      p-4 
+                      rounded-lg 
+                      shadow-sm 
+                      p-2 sm:p-3 
                       h-full 
                       flex 
                       flex-col 
                       overflow-hidden
                     "
                   >
-                    {isDashboardUser ? <DashboardUtilisateur /> : <DashboardEntreprise />}
+                    <Suspense fallback={<div>Chargement du tableau de bord...</div>}>
+                      {isDashboardUser ? <DashboardUtilisateur /> : <DashboardEntreprise />}
+                    </Suspense>
                   </div>
                 </div>
               </motion.div>
@@ -468,7 +586,7 @@ const HomePage = () => {
         {/* Section Intégrations */}
         <Section 
           id="integrations" 
-          className={`${colorMapping['integrations']} relative py-24 text-white`}
+          className={`${colorMapping['integrations']} relative py-20 text-white`}
         >
           <div className="absolute inset-0 bg-secondary/30 backdrop-blur-sm z-10"></div>
           <motion.div 
@@ -478,7 +596,7 @@ const HomePage = () => {
             whileInView="visible"
             viewport={{ once: true, margin: "-100px" }}
           >
-            <div className="text-center mb-16">
+            <div className="text-center mb-12">
               <motion.h2 
                 className="text-4xl md:text-5xl font-bold mb-6"
                 variants={itemVariant}
@@ -500,7 +618,7 @@ const HomePage = () => {
               {INTEGRATION_PARTNERS.map((partner) => (
                 <motion.div
                   key={partner.id}
-                  className="group bg-white bg-opacity-80 p-6 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer"
+                  className="group bg-white bg-opacity-80 p-6 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer flex flex-col items-center"
                   variants={itemVariant}
                   whileHover={{ scale: 1.05, y: -5 }}
                 >
@@ -508,7 +626,7 @@ const HomePage = () => {
                     <img
                       src={partner.imagePath}
                       alt={`${partner.name} Integration`}
-                      className="w-32 h-32 object-contain object-center transition-transform duration-300 group-hover:scale-110"
+                      className="w-24 h-24 object-contain object-center transition-transform duration-300 group-hover:scale-110"
                       loading="lazy"
                       onError={(e) => {
                         e.target.src = "/api/placeholder/200/100";
@@ -530,49 +648,51 @@ const HomePage = () => {
         {/* Section Statistiques */}
         <Section 
           id="statistiques" 
-          className={`${colorMapping['statistiques']} relative py-24 text-white`}
+          className={`${colorMapping['statistiques']} relative py-20 text-white`}
         >
           <div className="absolute inset-0 bg-secondary/30 backdrop-blur-sm z-10"></div>
           <div className="max-w-7xl mx-auto relative z-20">
             <motion.div 
-              className="grid lg:grid-cols-3 gap-8"
+              className="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8"
               variants={containerVariant}
               initial="hidden"
               whileInView="visible"
               viewport={{ once: true }}
             >
               <motion.div variants={itemVariant} className="col-span-1">
-                <MetricCard icon={Car} title="Performance Flotte" className="h-full bg-white bg-opacity-80 text-gray-900">
-                  <div className="h-64 flex items-center justify-center bg-gray-50 rounded-xl p-4">
-                    <FleetPerformanceChart />
+                <MetricCard icon={Car} title="Performance Flotte" className="h-full bg-white bg-opacity-80 text-gray-900 shadow-sm">
+                  <div className="h-48 flex items-center justify-center bg-gray-50 rounded-lg p-2">
+                    <Suspense fallback={<div>Chargement...</div>}>
+                      <FleetPerformanceChart />
+                    </Suspense>
                   </div>
-                  <div className="mt-4 text-sm text-gray-600">
+                  <div className="mt-2 text-sm text-gray-600">
                     Mise à jour en temps réel
                   </div>
                 </MetricCard>
               </motion.div>
 
               <motion.div variants={itemVariant} className="col-span-1">
-                <MetricCard icon={ChartBar} title="Réduction Émissions" className="h-full bg-white bg-opacity-80 text-gray-900">
-                  <div className="space-y-6 p-4">
+                <MetricCard icon={ChartBar} title="Réduction Émissions" className="h-full bg-white bg-opacity-80 text-gray-900 shadow-sm">
+                  <div className="space-y-4 p-2 sm:p-3">
                     <div className="flex justify-between items-center">
                       <span className="text-gray-600 font-medium">Objectif annuel</span>
-                      <span className="text-xl font-bold text-secondary">-30%</span>
+                      <span className="text-lg font-bold text-secondary">-30%</span>
                     </div>
                     <div className="relative pt-2">
-                      <div className="w-full bg-gray-100 rounded-full h-3">
+                      <div className="w-full bg-gray-200 rounded-full h-2">
                         <motion.div 
-                          className="bg-secondary h-3 rounded-full"
+                          className="bg-secondary h-2 rounded-full"
                           initial={{ width: 0 }}
                           whileInView={{ width: '65%' }}
                           transition={{ duration: 1, ease: "easeOut" }}
                         />
                       </div>
                       <div className="absolute -right-2 top-0 transform -translate-y-full">
-                        <span className="bg-secondary text-white text-xs px-2 py-1 rounded">65%</span>
+                        <span className="bg-secondary text-white text-xs px-2 py-0.5 rounded">65%</span>
                       </div>
                     </div>
-                    <div className="flex items-center justify-between text-sm">
+                    <div className="flex items-center justify-between text-xs">
                       <span className="text-gray-600">Progression</span>
                       <span className="font-medium text-secondary">65% de l'objectif atteint</span>
                     </div>
@@ -581,8 +701,8 @@ const HomePage = () => {
               </motion.div>
 
               <motion.div variants={itemVariant} className="col-span-1">
-                <MetricCard icon={Trophy} title="Certifications" className="h-full bg-white bg-opacity-80 text-gray-900">
-                  <div className="space-y-4 p-4">
+                <MetricCard icon={Trophy} title="Certifications" className="h-full bg-white bg-opacity-80 text-gray-900 shadow-sm">
+                  <div className="space-y-2 p-2 sm:p-3">
                     {[
                       { name: "ISO 14001", status: "Vérifié", date: "2024" },
                       { name: "Green Fleet", status: "Certifié", date: "2024" },
@@ -590,14 +710,14 @@ const HomePage = () => {
                     ].map((cert) => (
                       <div 
                         key={cert.name}
-                        className="group flex items-center justify-between p-3 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer"
+                        className="group flex items-center justify-between p-2 rounded-md hover:bg-gray-50 transition-colors cursor-pointer"
                       >
                         <div className="flex flex-col">
-                          <span className="font-medium text-gray-900">{cert.name}</span>
-                          <span className="text-sm text-gray-500">{cert.date}</span>
+                          <span className="font-medium text-gray-900 text-sm">{cert.name}</span>
+                          <span className="text-xs text-gray-500">{cert.date}</span>
                         </div>
-                        <span className="flex items-center gap-2 text-secondary">
-                          <Check size={20} />
+                        <span className="flex items-center gap-1 text-secondary text-xs">
+                          <Check size={16} />
                           <span className="font-medium">{cert.status}</span>
                         </span>
                       </div>
@@ -612,13 +732,13 @@ const HomePage = () => {
         {/* Section Contact */}
         <Section 
           id="contact" 
-          className={`${colorMapping['contact']} relative py-24 text-white`}
+          className={`${colorMapping['contact']} relative py-20 text-white`}
         >
           <div className="absolute inset-0 bg-secondary/30 backdrop-blur-sm z-10"></div>
           <div className="max-w-2xl mx-auto relative z-20">
-            <div className="text-center mb-12">
-              <h2 className="text-4xl font-bold mb-4">Contactez-nous</h2>
-              <p className="text-xl text-white">Nous sommes là pour répondre à vos questions</p>
+            <div className="text-center mb-10">
+              <h2 className="text-3xl font-bold mb-3">Contactez-nous</h2>
+              <p className="text-lg text-white">Nous sommes là pour répondre à vos questions</p>
             </div>
 
             <form onSubmit={(e) => {
@@ -629,38 +749,38 @@ const HomePage = () => {
               }, 1000);
             }} className="space-y-6">
               <div className="relative">
-                <Envelope size={20} weight="regular" className="w-5 h-5 absolute left-3 top-3.5 text-gray-400" />
+                <Envelope size={16} weight="regular" className="w-4 h-4 absolute left-3 top-3.5 text-gray-400" />
                 <input
                   type="text"
                   placeholder="Votre nom"
-                  className="w-full pl-10 pr-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-primary focus:border-transparent text-gray-900"
+                  className="w-full pl-8 pr-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-primary focus:border-transparent text-gray-900 text-sm"
                   required
                 />
               </div>
 
               <div className="relative">
-                <Envelope size={20} weight="regular" className="w-5 h-5 absolute left-3 top-3.5 text-gray-400" />
+                <Envelope size={16} weight="regular" className="w-4 h-4 absolute left-3 top-3.5 text-gray-400" />
                 <input
                   type="email"
                   placeholder="Votre email"
-                  className="w-full pl-10 pr-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-primary focus:border-transparent text-gray-900"
+                  className="w-full pl-8 pr-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-primary focus:border-transparent text-gray-900 text-sm"
                   required
                 />
               </div>
 
               <div className="relative">
-                <Chat size={20} weight="regular" className="w-5 h-5 absolute left-3 top-3.5 text-gray-400" />
+                <Chat size={16} weight="regular" className="w-4 h-4 absolute left-3 top-3.5 text-gray-400" />
                 <textarea
                   placeholder="Votre message"
-                  rows="5"
-                  className="w-full pl-10 pr-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-primary focus:border-transparent text-gray-900"
+                  rows="4"
+                  className="w-full pl-8 pr-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-primary focus:border-transparent text-gray-900 text-sm"
                   required
                 />
               </div>
 
               <button
                 type="submit"
-                className="w-full px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary-dark transition-colors flex items-center justify-center gap-2 text-lg"
+                className="w-full px-5 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark transition-colors flex items-center justify-center gap-2 text-sm active:scale-95"
               >
                 <PaperPlane size={16} />
                 Envoyer le message
@@ -670,10 +790,10 @@ const HomePage = () => {
         </Section>
 
         {/* Section Newsletter */}
-        <Section className="bg-gradient-to-r from-gray-100 to-gray-200 py-24">
+        <Section className="bg-gradient-to-r from-gray-100 to-gray-200 py-20">
           <div className="max-w-xl mx-auto text-center">
-            <h3 className="text-2xl font-bold text-gray-900 mb-4">Restez Informé</h3>
-            <p className="text-gray-600 mb-6">Abonnez-vous à notre newsletter pour recevoir nos dernières actualités</p>
+            <h3 className="text-xl font-bold text-gray-900 mb-3">Restez Informé</h3>
+            <p className="text-gray-600 mb-5">Abonnez-vous à notre newsletter pour recevoir nos dernières actualités</p>
             
             <form onSubmit={(e) => {
               e.preventDefault();
@@ -681,16 +801,16 @@ const HomePage = () => {
               setTimeout(() => {
                 alert('Inscription réussie (Demo)');
               }, 1000);
-            }} className="flex flex-col sm:flex-row gap-3">
+            }} className="flex flex-col sm:flex-row gap-2">
               <input
                 type="email"
                 placeholder="Votre adresse email"
-                className="flex-1 px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-primary focus:border-transparent"
+                className="flex-1 px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-primary focus:border-transparent text-gray-900 text-sm"
                 required
               />
               <button
                 type="submit"
-                className="px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary-dark transition-colors flex items-center gap-2 text-lg"
+                className="px-5 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark transition-colors flex items-center gap-2 text-sm active:scale-95"
               >
                 <PaperPlane size={16} />
                 S'abonner
@@ -700,61 +820,61 @@ const HomePage = () => {
         </Section>
       </main>
 
-  {/* Remplacement des Icônes Sociales dans le Footer */}
-  <footer className="py-8 bg-gray-900">
-          <div className="container mx-auto px-4 text-center text-gray-300">
-            <p>&copy; {new Date().getFullYear()} EchoTrack. Tous droits réservés.</p>
-            
-            <div className="flex justify-center space-x-6 my-6">
-              <a 
-                href="https://twitter.com/echotrack" 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="text-gray-400 hover:text-white transition-colors duration-300"
-              >
-                <TwitterLogo size={24} className="w-6 h-6" />
-                <span className="sr-only">Twitter</span>
-              </a>
-              <a 
-                href="https://linkedin.com/company/echotrack" 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="text-gray-400 hover:text-white transition-colors duration-300"
-              >
-                <LinkedinLogo size={24} className="w-6 h-6" />
-                <span className="sr-only">LinkedIn</span>
-              </a>
-              <a 
-                href="https://facebook.com/echotrack" 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="text-gray-400 hover:text-white transition-colors duration-300"
-              >
-                <FacebookLogo size={24} className="w-6 h-6" />
-                <span className="sr-only">Facebook</span>
-              </a>
-              <a 
-                href="https://instagram.com/echotrack" 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="text-gray-400 hover:text-white transition-colors duration-300"
-              >
-                <InstagramLogo size={24} className="w-6 h-6" />
-                <span className="sr-only">Instagram</span>
-              </a>
-            </div>
+      {/* Footer */}
+      <footer className="py-6 bg-gray-900">
+        <div className="container mx-auto px-4 text-center text-gray-300">
+          <p>&copy; {new Date().getFullYear()} EchoTrack. Tous droits réservés.</p>
+          
+          <div className="flex justify-center space-x-4 my-4">
+            <a 
+              href="https://twitter.com/echotrack" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="text-gray-400 hover:text-white transition-colors duration-300"
+            >
+              <TwitterLogo size={20} className="w-5 h-5" />
+              <span className="sr-only">Twitter</span>
+            </a>
+            <a 
+              href="https://linkedin.com/company/echotrack" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="text-gray-400 hover:text-white transition-colors duration-300"
+            >
+              <LinkedinLogo size={20} className="w-5 h-5" />
+              <span className="sr-only">LinkedIn</span>
+            </a>
+            <a 
+              href="https://facebook.com/echotrack" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="text-gray-400 hover:text-white transition-colors duration-300"
+            >
+              <FacebookLogo size={20} className="w-5 h-5" />
+              <span className="sr-only">Facebook</span>
+            </a>
+            <a 
+              href="https://instagram.com/echotrack" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="text-gray-400 hover:text-white transition-colors duration-300"
+            >
+              <InstagramLogo size={20} className="w-5 h-5" />
+              <span className="sr-only">Instagram</span>
+            </a>
+          </div>
 
-          <div className="flex justify-center space-x-4">
+          <div className="flex justify-center space-x-3">
             <button 
-              onClick={() => navigate('/privacy')}
-              className="hover:text-white transition-colors"
+              onClick={() => handleButtonClick(() => navigate('/privacy'))}
+              className="hover:text-white transition-colors text-xs"
             >
               Politique de Confidentialité
             </button>
             <span>|</span>
             <button
-              onClick={() => setIsTermsModalOpen(true)}
-              className="hover:text-white transition-colors"
+              onClick={() => handleButtonClick(() => setIsTermsModalOpen(true))}
+              className="hover:text-white transition-colors text-xs"
             >
               Conditions d'Utilisation
             </button>
@@ -762,19 +882,68 @@ const HomePage = () => {
         </div>
       </footer>
 
-      {/* Animation du chatbot */}
-      <motion.div
-        className="fixed bottom-16 right-7 z-50 cursor-pointer"
-        animate={{ y: [0, -9, 0] }}
-        transition={{ duration: 2, repeat: Infinity, repeatType: "loop" }}
-      >
-        <Chatbot />
-      </motion.div>
+      {/* Bottom Navigation pour mobile */}
+      <BottomNav 
+        currentSection={currentSection} 
+        scrollToSection={scrollToSection} 
+        handleButtonClick={handleButtonClick} 
+      />
 
+      {/* Modale des Conditions d'Utilisation */}
       <TermsModal 
         isOpen={isTermsModalOpen}
         onClose={() => setIsTermsModalOpen(false)}
       />
+
+      {/* Modale du Tableau de Bord */}
+      {isModalOpen && (
+        <div 
+          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+          onClick={() => setIsModalOpen(false)} // Fermer en cliquant sur le fond
+        >
+          <div 
+            className="bg-white w-11/12 max-w-2xl p-6 rounded-lg shadow-lg relative"
+            onClick={(e) => e.stopPropagation()} // Empêcher la fermeture en cliquant à l'intérieur
+          >
+            <button
+              onClick={() => setIsModalOpen(false)}
+              className="absolute top-2 right-2 text-gray-500 hover:text-black"
+            >
+              <X size={24} />
+            </button>
+            <div className="flex flex-col space-y-4">
+              <h2 className="text-2xl font-bold text-gray-800">Tableau de Bord</h2>
+              <div className="flex space-x-4">
+                {/* Bouton Vue Utilisateur */}
+                <button
+                  onClick={() => handleButtonClick(() => toggleDashboard('user'))}
+                  className={`px-4 py-2 bg-orange-500 text-white font-medium rounded-lg hover:bg-orange-600 transition-colors ${
+                    isDashboardUser ? 'opacity-100' : 'opacity-50'
+                  }`}
+                >
+                  Vue Utilisateur
+                </button>
+                {/* Bouton Vue Entreprise */}
+                <button
+                  onClick={() => handleButtonClick(() => toggleDashboard('enterprise'))}
+                  className={`px-4 py-2 bg-orange-500 text-white font-medium rounded-lg hover:bg-orange-600 transition-colors ${
+                    !isDashboardUser ? 'opacity-100' : 'opacity-50'
+                  }`}
+                >
+                  Vue Entreprise
+                </button>
+              </div>
+              <div className="bg-gray-100 rounded-lg shadow-inner w-full h-auto max-h-[70vh] overflow-auto p-4">
+                <div className="bg-white rounded-lg shadow-sm p-4 h-full flex flex-col overflow-hidden">
+                  <Suspense fallback={<div>Chargement du tableau de bord...</div>}>
+                    {isDashboardUser ? <DashboardUtilisateur /> : <DashboardEntreprise />}
+                  </Suspense>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </Layout>
   );
 };
